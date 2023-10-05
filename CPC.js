@@ -3,7 +3,7 @@
  *
  * @author Sinch Contact Pro Engineering team.
  * @license MIT
- * @link https://github.com
+ * @link https://github.com/sinch-contact-pro/CPC
  */
 
 /**
