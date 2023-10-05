@@ -30,4 +30,5 @@
 - In urgent cases if you have a problem with CPC in a production environment, please create a support ticket.
 
 ##### Changelist:
-- 4.10.2023 (4th Oct) - First release in GitHub. All feedback welcome! :)
+- v1.0.1 - This readme file updated.
+- v1.0.0 - First open-source release.
