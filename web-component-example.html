@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Use CPC within Web Component - Example</title>
+    <meta charset="UTF-8">
+    <script src='my-web-component-wrapper-for-cpc.js'></script>
+    <script>
+      // Listen for events from CPC:
+      window.addEventListener('cpc', customEvent => {
+        const cpcEvent = customEvent.detail;
+        // Do something with the event:
+        console.warn(cpcEvent);
+      });
+    </script>
+</head>
+
+<body>
+  <!-- Add a simple button which uses CPC API to check if CPC is initialized (if user is logged in)-->
+  <button onclick="alert('CPC is initialized: ' + window.CPC.isInitialized);">Check if CPC is initialized</button>
+
+  <!-- Add the wrapper web component for CPC -->
+  <my-web-component-wrapper-for-cpc width="500px" height="700px" onCpcEvent="on"/>
+</body>
+</html>
