@@ -30,5 +30,4 @@
 - In urgent cases if you have a problem with CPC in a production environment, please create a support ticket.
 
 ##### Changelist:
-- v1.0.1 - This readme file updated.
-- v1.0.0 - First open-source release.
+- v1.0.0 - First open-source release. See docs!
