@@ -1,6 +1,5 @@
 /**
  * Communication Panel Control (CPC) - For Sinch Communication Panel
- *
  * @author Sinch Contact Pro Engineering team.
  * @license MIT
  * @link https://github.com/sinch-contact-pro/CPC
@@ -8,7 +7,9 @@
 
 /**
  * @namespace CPC
- * @description <b>Remember:</b> CPC is a client-side API. Everything done with CPC is carried out in context of current user.<br/>
+ * @description
+ * <b>Remember:</b> CPC is a client-side API. Actions are carried out in context of current logged on user. Returned values depend on user account's rights.<br/><br/>
+ * <b>Terminology:</b> CPC API and this document use the term "<b>interaction</b>" when referring to inbound or outbound conversations with customers. The term "<b>conversation</b>" is used in other Sinch Contact Pro applications.<br/><br/>
  * <b>Tip:</b> Remember to <code>await</code> when using <code>async</code> methods.<br/><br/>
  * Have a great time integrating Communication Panel into your application!  &#128512;
  *
@@ -170,7 +171,7 @@
         const sendToCommunicationPanel = (payload) => {
             Log('DBG', 'sendToCommunicationPanel', JSON.stringify(payload));
             if (_oCpFrame === null) {
-                Log('WRN', 'sendToCommunicationPanel', 'Cannot send before iFrame is loaded & ready');
+                Log('WRN', 'sendToCommunicationPanel', 'Cannot send before iframe is loaded & ready');
                 return;
             }
             _oCpFrame.contentWindow.postMessage(payload, _sCpOrigin);
@@ -178,8 +179,8 @@
 
         /**
          * @alias activeInteractionId
-         * @type {string|undefined}
-         * @description ID of currently active & visible "Conversation"/<a href="global.html#interaction">interaction</a> in Communication Panel.
+         * @type {string|undefined|null}
+         * @description ID of current active <a href="global.html#interaction">interaction</a> being viewed in Communication Panel.
          * @memberof CPC
          */
         this.activeInteractionId = undefined;
@@ -197,7 +198,7 @@
         /**
         * @alias hostAppEventHandler
         * @type {function}
-        * @description Initially provided as parameter for <code>window.CPC.load</code>, but can be changed at any time.
+        * @description Event handler that is called per each event sent by Communication Panel. Initially provided as parameter for <a href="#load">CPC.load</a>. Can be changed at any time.
         * @memberof CPC
         */
         this.hostAppEventHandler = undefined;
@@ -213,9 +214,9 @@
         /**
          * @alias authenticate_basic
          * @description
-         * Authenticate Contact Pro user with Basic Authentication.<br/><br/>
-         * <b>Note: </b> When using this authentication option, be sure to handle user credentials with care. In your application you must prevent credentials getting logged, or otherwise getting stored persistently. When possible, use <code>authenticate_token</code> instead.<br/><br/>
-         * <b>Recommended:</b> Authententication can also be handled as part of <a href="#load">load</a> call.
+         * Authenticate Contact Pro user with basic authentication.<br/><br/>
+         * <b>Note: </b> When using this authentication option, be sure to handle user credentials with care. In your application you must prevent credentials getting logged or otherwise getting stored persistently. When possible, use <code>authenticate_token</code> instead.<br/><br/>
+         * <b>Recommended:</b> Authentication can also be handled as part of <a href="#load">load</a> call.
          * @async
          * @param {string} sUsername Username
          * @param {string} sPassword Password
@@ -275,7 +276,7 @@
          *
          * Upon successful token verification, the <code>user_info</code> endpoint must return <code>200 OK</code> and payload <code>{sub: '', email: ''}</code> where values correspond with Contact Pro user's Certificate Subject and Email values.<br/><br/>
          * ECF server finally identifies Contact Pro user based on <code>sub</code> and <code>email</code>, and grants session cookie, allowing browser to access resources behind ECF Web Server.<br/><br/>
-         * <b>Recommended:</b> Authententication can also be handled as part of <a href="#load">load</a> call.
+         * <b>Recommended:</b> Authentication can also be handled as part of <a href="#load">load</a> call.
          * @async
          * @param {string} authToken OAuth token
          * @returns {boolean} Authentication result
@@ -318,9 +319,9 @@
          * @description Sends a call out request to Communication Panel.
          * @async
          * @param {string} destinationNumber Destination phone number.
-         * @param {string=} sourceQueueNumber Queue number to be used as Visible A Number for the call.<br/>
-         * <b>Note:</b>User must have serve appropriate rights to the Queue.<br/>
-         * <b>Tip:</b>Check list of user's Queues first with <a href="#getCurrentUserQueues">getCurrentUserQueues</a>.
+         * @param {string=} sourceQueueNumber Queue number to be used as <i>Visible A Number</i> for the call.<br/>
+         * <b>Note:</b>User must have appropriate serve rights to the Queue.<br/>
+         * <b>Tip:</b>Check list of user's queues first with <a href="#getCurrentUserQueues">getCurrentUserQueues</a>
          * @returns {object|false} Phone call object, or false if creating a call failed.
          * @memberof CPC
          */
@@ -356,11 +357,11 @@
 
         /**
          * @alias callState
-         * @description Perform a state changing action on a proceeding phone call.
+         * @description Change state of ongoing phone call.
          * @async
          * @param {'startRecording'|'stopRecording'|'hold'|'unhold'|'mute'|'unmute'} action State change to be performed on currently ongoing phone call.
-         * @param {string=} interactionId Id of <a href="global.html#interaction">interaction</a> that should be acted on. Defaults to user's currently selected/visible interaction.
-         * @returns {false|Object}
+         * @param {string=} interactionId Id of <a href="global.html#interaction">interaction</a> that should be acted on. Defaults to user's current active <a href="global.html#interaction">interaction</a> being viewed in Communication Panel.
+         * @returns {false|Object} Changed <a href="global.html#interaction">interaction</a> object, or false if action failed.
          * @memberof CPC
          */
         this.callState = async (action, interactionId) => {
@@ -396,7 +397,7 @@
          * @async
          * @param {string} to Address or number of destination Queue or User.
          * @param {string=} interactionId Id of the ongoing interaction.
-         * @returns {object|false} Created interaction, or false on failure.
+         * @returns {object|false} Created <a href="global.html#interaction">interaction</a> object, or false if action failed.
          * @memberof CPC
          */
         this.consult = async (to, interactionId) => {
@@ -426,11 +427,11 @@
 
         /**
          * @alias dtmf
-         * @description Send DTMF tone to ongoing phone call currently active/visible in Communication Panel. This works only with <code>phone</code> channel.
+         * @description Send DTMF tone to current active <a href="global.html#interaction">interaction</a> being viewed in Communication Panel. This works only with <code>phone</code> channel.
          * @async
          * @param {'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'A'|'B'|'C'|'D'|'*'|'#'} tone The tone to be sent.
          * @param {string=} interactionId Specify ongoing phone <a href="global.html#interaction">interaction</a> for which tone is sent.
-         * @returns {false|Object}
+         * @returns {false|Object} Corresponding <a href="global.html#interaction">interaction</a> object, or false if action failed.
          * @memberof CPC
          */
         this.dtmf = async (tone, interactionId) => {
@@ -455,7 +456,7 @@
 
         /**
         * @alias getCurrentUserQueues
-        * @description Get the currently logged-on User's Queue list.
+        * @description Get the currently logged on user's queue list.
         * @async
         * @param {'phone'|'chat'|'email'=} sChannelType Optionally filter by channel.
         * @returns {Array} Array of <a href="global.html#queue">queue</a>(s).
@@ -475,7 +476,7 @@
          * @description Returns details of defined subject.
          * @async
          * @param {'user'|'interaction'|'interactions'|'queue'|'queues'|'transcript'|'activeExtension '|'activeInteraction'| string} subject Subject of details request.
-         * @returns {object }Object including details of the given subject. <a target="_blank" href="https://docs.cc.sinch.com/cloud/api/CPExtInterface.html#detail">In CPExtInterface schema, see "detail".</a>
+         * @returns {object} Object including details of the given subject. <a target="_blank" href="../CPExtInterface.html#detail">In CPExtInterface schema, see "detail".</a>
          * @memberof CPC
          */
         this.getDetails = async (subject) => {
@@ -496,7 +497,7 @@
         /**
         * @alias getTenantBaseUrl
         * @description Get Contact Pro tenant/installation base URL. This is provided initially as parameter for <a href="#load">load</a>.
-        * @returns {string} Tenant base URL.
+        * @returns {string} URL.
         * @memberof CPC
         */
         this.getTenantBaseUrl = () => {
@@ -507,7 +508,7 @@
          * @alias hasOngoingInteraction
          * @description Check if user has any ongoing <a href="global.html#interaction">interaction</a>(s) in Communication Panel.
          * @param {'phone'|'chat'|'email'=} channelType Optionally check specified channel type only.
-         * @returns {boolean} True when there is at least ongoing interaction.
+         * @returns {boolean} True when there is at least one ongoing interaction.
          * @memberof CPC
          */
         this.hasOngoingInteraction = (channelType) => {
@@ -531,6 +532,7 @@
          * @deprecated <a href="#hasOngoingInteraction">Use hasOngoingInteraction insted</a>
          * @description Check if user has ongoing interaction(s) of specific type.
          * @param {'phone'|'chat'|'email'} channelType Channel
+         * @returns {boolean} True when there is at least one ongoing interaction.
          * @memberof CPC
          */
         this.hasOngoingInteractionOfType = (channelType) => {
@@ -542,7 +544,7 @@
          * @description Sends initialization request to Communication Panel. As result, Communication Panel will start sending events and accepting commands from CPC.<br/><br/>
          * <b>Note:</b> This is needed only if <a href="#load">load</a> is not used to automatically inject Communication Panel.<br/>
          * <b>Recommended:</b> Use <a href="#load">load</a> instead. It internally handles calling <code>init</code> so you don't need to.
-         * @returns {void}
+         * @returns {void} No return value.
          * @memberof CPC
          */
         this.init = () => {
@@ -557,11 +559,11 @@
 
         /**
          * @alias interaction
-         * @description Perform a state changing action on the <a href="global.html#interaction">interaction</a> user currently has active/visible in Communication Panel.
+         * @description Perform a state changing action on the current active <a href="global.html#interaction">interaction</a> being viewed in Communication Panel.
          * @async
          * @param {'accept'|'reject'|'pick'|'handle'|'hangup'} action Type of action to perform.
          * @param {string=} interactionId Specify ID of ongoing interaction which should be acted upon.
-         * @returns {Object|false} Changed interaction object, of false if state change failed.
+         * @returns {Object|false} Changed <a href="global.html#interaction">interaction</a> object, or false if action failed.
          * @memberof CPC
          */
         this.interaction = async (action, interactionId) => {
@@ -593,9 +595,9 @@
          * @alias joinCalls
          * @description Joins currently active original inbound or outbound phone call <a href="global.html#interaction">interaction</a> and corresponding consultation call.<br/>
          * This drops the agent/user from the ongoing calls, connects other parties in a joined phone call.<br/>
-         * <b>Note:</b> After <code>joinCalls</code> completes, phone call signaling and voice still remain connected via Sinch Contact Pro backend, but can no longer be controlled by CPC.
+         * <b>Note:</b> After <code>joinCalls</code> completes, phone call signaling and voice still remain connected via Sinch Contact Pro backend but can no longer be controlled by CPC.
          * @async
-         * @returns {object|false} ToDo !!
+         * @returns {object|false} The <a href="global.html#interaction">interaction</a> object of phone call from which the agent/user left, or false if action failed.
          * @memberof CPC
          *
          */
@@ -620,16 +622,16 @@
          * @param {Object} config Object containing initial configuration for CPC.
          * @param {function} config.eventHandler Defined by Client Application.
          * @param {string} config.tenantBaseUrl Contact Pro tenant/installation specific base-URL.
-         * @param {string|Object} config.parentElement Provide container element ID, or reference to container element. Communication Panel iFrame is injected into this element.
-         * @param {boolean=} config.enableDebugLog Set <b>true</b> to enable debug logging.
-         * @param {boolean=} config.denyPopout Set <b>true</b> to deny user from opening CP in pop-out window. This also disables My Conversations view, and overrides any User Settings Template -level settings configured in System Configurator.
+         * @param {string|Object} config.parentElement Provide container element ID or reference to container element. An <code>iframe</code> element containing Communication Panel is injected into this element.
+         * @param {boolean=} config.enableDebugLog Set <code>true</code> to enable debug logging.
+         * @param {boolean=} config.denyPopout Set <code>true</code> to deny user from opening CP in pop-out window. This also disables My Conversations view, and overrides any User Settings Template -level settings configured in System Configurator.
          * @param {number=} config.minWidth Set width limit (interpreted in pixels) to activate My Conversations view. This overrides User Settings Template -level settings configured in System Configurator.
          * @param {number=} config.minHeight Set height limit (interpreted in pixels) to activate My Conversations view. This overrides User Settings Template -level settings configured in System Configurator.
          * @param {boolean=} config.enableChannelStatusUpdates When enabled, CPC forwards channel_status updates to client event handler.
          * @param {Object=} config.authentication Authenticate and log user in automatically.
          * @param {Object=} config.authentication.oAuth OAuth
          * @param {string} config.authentication.oAuth.token Token
-         * @param {Object=} config.authentication.basic Basic Authentication
+         * @param {Object=} config.authentication.basic basic authentication
          * @param {string} config.authentication.basic.userName Username
          * @param {string} config.authentication.basic.password Password
          * @async
@@ -694,12 +696,12 @@
                 startMessageListener();
                 Log('INF', 'load', 'Loaded. Host app origin [' + window.origin + ']. Configuration=[' + JSON.stringify(config) + ']');
                 this.hostAppEventHandler({
-                    // Fabricate an event to notify customer event handler of when CPC has successfully loaded Communication Panel into iFrame
+                    // Fabricate an event to notify customer event handler of when CPC has successfully loaded Communication Panel into <code>iframe</code>
                     id: 'cpc-onload',
                     type: 'status',
                     payload: {
                         attribute: 'onload',
-                        value: 'Communication Panel loaded in iFrame'
+                        value: 'Communication Panel loaded in iframe'
                     }
                 });
                 this.init();
@@ -707,25 +709,25 @@
             try {
                 _oParentElement = isString(config.parentElement) ? document.getElementById(config.parentElement) : config.parentElement;
                 if (_oParentElement === null) {
-                    Log('ERR', 'load', 'Could not load Communication Panel into iFrame. Could not find defined parent element [' + config.parentElement + ']');
+                    Log('ERR', 'load', 'Could not load Communication Panel into iframe. Could not find defined parent element [' + config.parentElement + ']');
                     return false;
                 }
                 _oParentElement.appendChild(i);
                 _oCpFrame = i;
                 return true;
             } catch (e) {
-                Log('ERR', 'load', 'Could not load Communication Panel into iFrame. Exception=[' + e.message + ']');
+                Log('ERR', 'load', 'Could not load Communication Panel into iframe. Exception=[' + e.message + ']');
                 return false;
             }
         };
 
         /**
          * @alias message
-         * @description Send a textual message to active <code>chat</code> "Conversation"/<a href="global.html#interaction">interaction</a>. Works also with <b>sms</b> chats.
+         * @description Send a textual message to active <code>chat</code> <a href="global.html#interaction">interaction</a>. Works also with <b>sms</b> chats.
          * @async
          * @param {string} message Message content
          * @param {string=} interactionId Specific interaction for which the message should be sent.
-         * @returns {false|Object} ToDo
+         * @returns {false|Object} Corresponding <a href="global.html#interaction">interaction</a> object, or false if action failed.
          * @memberof CPC
          */
         this.message = async (message, interactionId) => {
@@ -750,7 +752,7 @@
 
         /**
          * @alias ongoingInteractions
-         * @description Returns a Map containing all currently ongoing <a href="global.html#interaction">interaction</a>(s) cached by CPC. These interactions include the extra timestamps appended by CPC.
+         * @description Returns a <code>Map</code> containing all currently ongoing <a href="global.html#interaction">interaction</a>(s) cached by CPC. These interactions include the extra timestamps appended by CPC.
          * @returns {Map<string, object>} Key = InteractionId, Value = <a href="global.html#interaction">interaction</a>
          * @memberof CPC
          */
@@ -764,7 +766,7 @@
          * @async
          * @param {Object} email Object containing following properties
          * @param {Array} email.to Array of destination email addresses.
-         * @param {boolean} email.direct If true, email is sent without user interaction. When true, value for all optional parameters must be provided.
+         * @param {boolean} email.direct If <code>true</code>, email is sent without user interaction. When <code>true</code>, value for all optional parameters must be provided.
          * @param {string=} email.from Specific sender address can be defined.
          * @param {string=} email.subject Subject for email
          * @param {string=} email.content Content of email message.
@@ -808,7 +810,7 @@
          * @param {Object} msg Object containing following properties
          * @param {string} msg.to Destination number
          * @param {boolean} msg.direct If <code>true</code>, SMS chat is started and first message sent without user interaction. When <code>true</code>, all other optional parameters require values as well.
-         * @param {string=} msg.from Queue number/address of message. User must have serve-right for the Queue.
+         * @param {string=} msg.from Queue number/address of message. User must have serve right for the Queue.
          * @param {string=} msg.content Content of SMS message.
          * @returns {object|false} Created SMS <a href="global.html#interaction">interaction</a> object, or false if creation failed.
          * @memberof CPC
@@ -840,20 +842,20 @@
         };
 
         /**
-         * @alias startWhatsappChat
-         * @description Start a new Whatsapp chat.
+         * @alias startWhatsAppChat
+         * @description Start a new WhatsApp chat.
          * @async
          * @param {Object} chat Object containing following properties
          * @param {string} chat.to Destination number
-         * @param {boolean} chat.direct If true, Whatsapp chat is started and first message sent without user interaction. When true, value for all optional parameters must be provided.
-         * @param {string=} chat.from Queue number/address of message. User must have serve-right for the Queue.
-         * @param {string=} chat.content Content of first Whatsapp message sent. Note: Delivery of this message depends on current concent status of destination number. Delivery is not guaranteed.
-         * @param {string=} chat.defaultReplyTemplateId Specific Whatsapp template to use, which is sent when invoking first Whatsapp chat towards number for which Contact Pro doesn't have stored concent yet.
-         * @returns {object|false} Created Whatsapp chat <a href="global.html#interaction">interaction</a> object, or false if creation failed.
+         * @param {boolean} chat.direct If <code>true</code>, value for all optional parameters must be provided. When <code>true</code>, chat is started and first message is sent without user interaction.
+         * @param {string=} chat.from Queue number/address of message. User must have serve right for the Queue.
+         * @param {string=} chat.content Content of first WhatsApp message sent. Note: Delivery of this message depends on current consent status of destination number. Delivery is not guaranteed.
+         * @param {string=} chat.defaultReplyTemplateId Specific WhatsApp template to use, which is sent when invoking first WhatsApp chat towards number for which Contact Pro doesn't have stored consent yet.
+         * @returns {object|false} Created WhatsApp chat <a href="global.html#interaction">interaction</a> object, or false if creation failed.
          * @memberof CPC
          */
-        this.startWhatsappChat = async (chat) => {
-            const fn = 'startWhatsappChat';
+        this.startWhatsAppChat = async (chat) => {
+            const fn = 'startWhatsAppChat';
             if (!chat.to) {
                 Log('WRN', fn, 'Must provide value for [to]');
                 return false;
@@ -874,7 +876,7 @@
                 Log('WRN', fn, 'Must provide a string UID value for parameter [templateId]');
                 return false;
             }
-            Log('INF', fn, 'Starting Whatsapp chat to [' + chat.to + '] with template id [' + chat.defaultReplyTemplateId + ']');
+            Log('INF', fn, 'Starting WhatsApp chat to [' + chat.to + '] with template id [' + chat.defaultReplyTemplateId + ']');
             return await this.xdmSendAction({
                 cpcFn: fn,
                 command: 'outbound',
@@ -886,9 +888,9 @@
          * @alias transfer
          * @description Transfer ongoing <a href="global.html#interaction">interaction</a>. Possible in <code>phone</code> and <code>chat</code> channels.
          * @async
-         * @param {string} to Address or number of destination Queue or User.
+         * @param {string} to Address or number of destination queue or user.
          * @param {string=} interactionId Id of the ongoing interaction.
-         * @returns {object|false} Created Whatsapp <a href="global.html#interaction">interaction</a> object, or false if creation failed.
+         * @returns {object|false} Created WhatsApp <a href="global.html#interaction">interaction</a> object, or false if creation failed.
          * @memberof CPC
          */
         this.transfer = async (to, interactionId) => {
@@ -916,9 +918,9 @@
          * @alias unload
          * @description
          * Unload performs two steps:<br/>
-         * 1) Sends request to server to invalidate current authentication cookie -> Server logs out currently logged in user.<br/>
-         * 2) CPC deletes the iFrame element that contains Communication Panel.<br/>
-         * <b>Note:</b> This is a 'hard logout' which does not take into account possibly ongoing "Conversations"/<a href="global.html#interaction">interaction</a>(s) such as phone calls or chats. If needed, call <code>hasOngoingInteraction()</code> first. If user needs to log back in, call <code>load</code> to re-inject Communication Panel.
+         * 1. Sends request to server to invalidate current authentication cookie -> Server logs out currently logged in user.<br/>
+         * 2. CPC deletes the <code>iframe</code> element that contains Communication Panel.<br/>
+         * <b>Note:</b> This is a 'hard logout' which does not take into account possibly ongoing <a href="global.html#interaction">interaction</a>(s) such as phone calls or chats. If needed, call <code>hasOngoingInteraction()</code> first. If user needs to log back in, call <code>load</code> to re-inject Communication Panel.
          * @async
          * @returns {boolean} Unload result.
          * @memberof CPC
@@ -946,7 +948,7 @@
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 const frame = document.getElementById(_sProdName + '-frame');
                 _oParentElement.removeChild(frame);
-                Log('INF', fn, 'Communication Panel iFrame removed from DOM - Unload complete');
+                Log('INF', fn, 'Communication Panel iframe removed from DOM - Unload complete');
                 return true;
             } catch (err) {
                 Log('ERR', fn, 'Unloading failed. Endpoint [' + _sAuthUrl + '] error: ' + err.message);
@@ -958,7 +960,7 @@
          * @alias xdmSendAction
          * @description Helper for sending <code>action</code> messages to Communication Panel.<br/><br/>
          * <b>Note:</b> Usually there is no need to call this directly.<br/>
-         * In CPC there is a convenience method per each capability/feature of the underlying <a target="_blank" href="https://docs.cc.sinch.com/cloud/api/CPExtInterface.html#message-schema">CPExtInterface</a>. Convenience methods handle calling <code>xdmSendAction</code> internally, so you don't have to.
+         * In CPC there is a convenience method per each capability/feature of the underlying <a target="_blank" href="../CPExtInterface.html#message-schema">CPExtInterface</a>. Convenience methods handle calling <code>xdmSendAction</code> internally, so you don't have to.
          * @async
          * @param {object} payload Object containing documented attributes and values.
          * @returns {object} Response payload value from Communication Panel.

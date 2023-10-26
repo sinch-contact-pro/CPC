@@ -1,12 +1,12 @@
 ### Sinch Contact Pro - Communication Panel Control (CPC)
 
-##### What is this?
+##### What is CPC?
 - Purpose of CPC is to make it easy for developers to integrate Sinch Communication Panel into any web application.
 - Typical use-case: A CRM or ERP application needs to be enhanced with omni-channel communication capabilities.
 
 ##### Documentation:
-- Playground & Introductionary page:
-- CPC API documentation: 
+- Playground & Introductionary page: https://docs.cc.sinch.com/cloud/api/CPC/playground/index.html
+- CPC API documentation (JSDoc): https://docs.cc.sinch.com/cloud/api/CPC/index.html
 
 ##### Content of this GitHub repository:
 
@@ -19,7 +19,6 @@
 ##### Installation:
 - Edit your web application's code to include the CPC.js script.
 - Depending on your needs, you may want to copy CPC.js and host it on your own server.
-- Note: Versioning - Coming up soon! Until then, use with caution and always perform your own practical end-to-end testing.
 
 ##### Usage:
 - API is available via ``window.CPC``
@@ -30,5 +29,4 @@
 - In urgent cases if you have a problem with CPC in a production environment, please create a support ticket.
 
 ##### Changelist:
-- v1.0.1 - This readme file updated.
 - v1.0.0 - First open-source release.
