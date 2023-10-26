@@ -624,8 +624,8 @@
          * @param {function} config.eventHandler Defined by Client Application.
          * @param {string} config.tenantBaseUrl Contact Pro tenant/installation specific base-URL.
          * @param {string|Object} config.parentElement Provide container element ID or reference to container element. An <code>iframe</code> element containing Communication Panel is injected into this element.
-         * @param {boolean=} config.enableDebugLog Set <b>true</b> to enable debug logging.
-         * @param {boolean=} config.denyPopout Set <b>true</b> to deny user from opening CP in pop-out window. This also disables My Conversations view, and overrides any User Settings Template -level settings configured in System Configurator.
+         * @param {boolean=} config.enableDebugLog Set <code>true</code> to enable debug logging.
+         * @param {boolean=} config.denyPopout Set <code>true</code> to deny user from opening CP in pop-out window. This also disables My Conversations view, and overrides any User Settings Template -level settings configured in System Configurator.
          * @param {number=} config.minWidth Set width limit (interpreted in pixels) to activate My Conversations view. This overrides User Settings Template -level settings configured in System Configurator.
          * @param {number=} config.minHeight Set height limit (interpreted in pixels) to activate My Conversations view. This overrides User Settings Template -level settings configured in System Configurator.
          * @param {boolean=} config.enableChannelStatusUpdates When enabled, CPC forwards channel_status updates to client event handler.
@@ -767,7 +767,7 @@
          * @async
          * @param {Object} email Object containing following properties
          * @param {Array} email.to Array of destination email addresses.
-         * @param {boolean} email.direct If true, email is sent without user interaction. When true, value for all optional parameters must be provided.
+         * @param {boolean} email.direct If <code>true</code>, email is sent without user interaction. When <code>true</code>, value for all optional parameters must be provided.
          * @param {string=} email.from Specific sender address can be defined.
          * @param {string=} email.subject Subject for email
          * @param {string=} email.content Content of email message.
@@ -848,7 +848,7 @@
          * @async
          * @param {Object} chat Object containing following properties
          * @param {string} chat.to Destination number
-         * @param {boolean} chat.direct If true, value for all optional parameters must be provided. When true, chat is started and first message is sent without user interaction.
+         * @param {boolean} chat.direct If <code>true</code>, value for all optional parameters must be provided. When <code>true</code>, chat is started and first message is sent without user interaction.
          * @param {string=} chat.from Queue number/address of message. User must have serve right for the Queue.
          * @param {string=} chat.content Content of first WhatsApp message sent. Note: Delivery of this message depends on current consent status of destination number. Delivery is not guaranteed.
          * @param {string=} chat.defaultReplyTemplateId Specific WhatsApp template to use, which is sent when invoking first WhatsApp chat towards number for which Contact Pro doesn't have stored consent yet.
