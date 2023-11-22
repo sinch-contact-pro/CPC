@@ -106,10 +106,13 @@
                     Log('DBG', 'message', 'Got response for action [' + message.data.id + ']: ' + JSON.stringify(message.data));
                     _oPendingActions[message.data.id].response = message.data;
                 } else if (message.data.type === 'state' && message.data.payload.attribute === 'activeInteraction') {
-                    // Prevent flooding customer's event handler with unnecessary 'null' updates:
                     if ((message.data.payload.value === null && this.activeInteractionId !== null) || (message.data.payload.value !== null && message.data.payload.value.id !== this.activeInteractionId)) {
-                        this.activeInteractionId = message.data.payload.value.id || null;
-                        Log('DBG', 'message', 'Active & in-view interaction changed to [' + this.activeInteractionId + ']');
+                        this.activeInteractionId = message.data.payload.value?.id || null;
+                        if (this.activeInteractionId) {
+                            Log('DBG', 'message', 'Active & in-view interaction changed to [' + this.activeInteractionId + ']');
+                        } else {
+                            Log('DBG', 'message', 'Active & in-view interaction: None');
+                        }
                         const activeInteractionEvent = message.data;
                         activeInteractionEvent.payload.value = this.activeInteractionId;
                         this.hostAppEventHandler(activeInteractionEvent);
