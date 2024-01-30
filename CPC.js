@@ -88,20 +88,7 @@
                     Log('DBG', 'startMessageListener.message', 'First message receieved from CP, setting CPC.isInitialised to true');
                 }
                 if (message.data.type === 'init' && message.data.payload.value.length === 0) {
-                    const getUserData = async () => {
-                        const userDetailsResponse = await this.getDetails('user');
-                        this.currentUser = userDetailsResponse.payload.value;
-                        this.hostAppEventHandler({
-                            // Fabricate an event to notify customer event handler of when CPC has successfully initialized window messaging with Communication Panel.
-                            id: 'cpc-init',
-                            type: 'status',
-                            payload: {
-                                attribute: 'init',
-                                value: this.currentUser
-                            }
-                        });
-                    };
-                    getUserData();
+                    this._getUserData();
                 } else if (message.data.type === 'response' && _oPendingActions[message.data.id]) {
                     Log('DBG', 'message', 'Got response for action [' + message.data.id + ']: ' + JSON.stringify(message.data));
                     _oPendingActions[message.data.id].response = message.data;
@@ -1207,6 +1194,26 @@
             }
             this.hostAppEventHandler(oReturn);
             return oReturn;
+        };
+
+        /**
+         * Initial user's data synchronization. Meant to be used during CPC load
+         * @private
+         */
+        this._getUserData = () => {
+            this.getDetails('user')
+                .then(res => {
+                    this.currentUser = res.payload.value;
+                    this.hostAppEventHandler({
+                        // Fabricate an event to notify customer event handler of when CPC has successfully initialized window messaging with Communication Panel.
+                        id: 'cpc-init',
+                        type: 'status',
+                        payload: {
+                            attribute: 'init',
+                            value: this.currentUser
+                        }
+                    });
+                })
         };
     }();
 
