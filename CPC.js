@@ -89,6 +89,7 @@
                 }
                 if (message.data.type === 'init' && message.data.payload.value.length === 0) {
                     this._getUserData();
+                    this._initOngoingInteractions();
                 } else if (message.data.type === 'response' && _oPendingActions[message.data.id]) {
                     Log('DBG', 'message', 'Got response for action [' + message.data.id + ']: ' + JSON.stringify(message.data));
                     _oPendingActions[message.data.id].response = message.data;
@@ -1213,6 +1214,30 @@
                             value: this.currentUser
                         }
                     });
+                })
+        };
+
+        /**
+         * Initial ongoing interactions synchronization. Meant to be used during CPC load
+         * @private
+         */
+        this._initOngoingInteractions = () => {
+            this.getDetails('interactions')
+                .then(res => {
+                    if (res) {
+                        [...res.payload.value].forEach(interaction => {
+                            _oInteractions.set(interaction.id, interaction)
+                        })
+                    }
+                    const event = {
+                        id: 'cpc-init-ongoing-interactions',
+                        type: 'state',
+                        payload: {
+                            attribute: 'ongoingInteractions',
+                            value: _oInteractions
+                        }
+                    }
+                    this.hostAppEventHandler(event)
                 })
         };
     }();
