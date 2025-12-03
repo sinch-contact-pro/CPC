@@ -766,6 +766,16 @@
         };
 
         /**
+         * @alias picklist
+         * @description Returns user's Picklist content.
+         * @returns {Array<object>} Array of pickable <a href="https://docs.cc.sinch.com/cloud/api/RMI.html#contacts_get">contacts</a>
+         * @memberof CPC
+         */
+        this.picklist = async () => {
+            return await this.xdmSendAction({ cpcFn: 'picklist', command: 'picklist'});
+        };
+
+        /**
          * @alias sendEmail
          * @description Create a new email.
          * @async
