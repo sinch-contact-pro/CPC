@@ -31,7 +31,8 @@
         let _oCpFrame = null;
         const _sInitRequest = 'initRequest';
         let _iActionRequestCount = 0;
-        const _iActionMaxWaitCount = 15;
+        const _iActionMaxWaitCount = 100;
+        const _iResponseAwaiterInterval = 50; // 100 * 50ms = 5 seconds, to wait for replies from CP.
         const _oPendingActions = {};
         const _oInteractions = new Map();
         let _sTenantBaseUrl;
@@ -672,6 +673,7 @@
             if (Number.isInteger(config.minWidth) && config.minWidth > 0) cpUrl += '&minWidth=' + config.minWidth;
             if (Number.isInteger(config.minHeight) && config.minHeight > 0) cpUrl += '&minHeight=' + config.minHeight;
             if (_bDebug) cpUrl += '&sap-ui-debug=true';
+            if (config.skipCDN) cpUrl += '&ui-version=backend'; // Reserved for special debugging cases only. Not advertised in JSDoc.
             if (config.enableChannelStatusUpdates) {
                 _bChannelStatusUpdatesEnabled = true;
             }
@@ -1008,7 +1010,7 @@
                     } else {
                         setTimeout(() => {
                             responseWaiter(pendingAction.action.id);
-                        }, 50);
+                        }, _iResponseAwaiterInterval);
                     }
                 };
 
