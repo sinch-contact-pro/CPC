@@ -772,7 +772,9 @@
          * @memberof CPC
          */
         this.picklist = async () => {
-            return await this.xdmSendAction({ cpcFn: 'picklist', command: 'picklist'});
+            const fn = 'picklist';
+            Log('INF', fn, 'Fetching pickable Contacts');
+            return await this.xdmSendAction({ cpcFn: fn, command: 'picklist'});
         };
 
         /**
