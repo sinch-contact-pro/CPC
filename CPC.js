@@ -43,6 +43,8 @@
         if (_sDevTenant || _sTenantBaseUrl) {
             _sAuthUrl = _sDevTenant || _sTenantBaseUrl + 'ecfs/authentication/'; // Note! Remember to include last trailing slash - Otherwise pre-flight OPTIONS is not routed to CorsFilter
         }
+        let _sPickingContactId = null;
+        let _pickedResolver = null;
 
         // Helper for writing nicer console log:
         const Log = (severity, section, message) => {
@@ -65,6 +67,15 @@
                 case 'WRN': console.warn(line); break;
                 default: console.log(line);
                 }
+            }
+        };
+
+        // Helper for 'pick'.
+        const notifyPicked = (pickedInteraction) => {
+            _sPickingContactId = null;
+            if (_pickedResolver) {
+                _pickedResolver(pickedInteraction);
+                _pickedResolver = null;
             }
         };
 
@@ -142,12 +153,12 @@
                         }
                         const now = new Date().toISOString();
                         switch (message.data.payload.value) {
-                        case 'incoming': interaction.date_incoming = now; break;
-                        case 'outgoing': interaction.date_outgoing = now; break;
-                        case 'accepted': interaction.date_accepted = now; break;
-                        case 'rejected': interaction.date_rejected = now; break;
-                        case 'ended': interaction.date_ended = now; break;
-                        case 'handled': interaction.date_handled = now; break;
+                            case 'incoming': interaction.date_incoming = now; break;
+                            case 'outgoing': interaction.date_outgoing = now; break;
+                            case 'accepted': interaction.date_accepted = now; break;
+                            case 'rejected': interaction.date_rejected = now; break;
+                            case 'ended': interaction.date_ended = now; break;
+                            case 'handled': interaction.date_handled = now; break;
                         }
                         if (message.data.payload.value === 'handled') {
                             _oInteractions.delete(interaction.id);
@@ -157,6 +168,13 @@
                             Log('DBG', 'message', 'Interaction [' + interaction.id + '] updated in cache');
                         }
                         Log('DBG', 'message', 'Communication Panel ongoing conversations: [' + _oInteractions.size + ']');
+                        if (message.data.payload.value === 'accepted' && _sPickingContactId !== null && _pickedResolver !== null) {
+                            // The 'pick' command is done using Contact ID. Once picked, backend transforms Contact into Interaction with a new ID.
+                            // Unfortunately, CP doesn't echo back the resulting interaction id.
+                            // We need to assume that the next accepted interaction (after 'pick') is the picked interaction.
+                            Log('DBG', 'message', 'Picked Contact [' + _sPickingContactId + '] should be interaction [' + interaction.id + ']');
+                            notifyPicked(interaction);
+                        }
                         const interactionEvent = message.data;
                         interactionEvent.payload.interaction = interaction;
                         this.hostAppEventHandler(interactionEvent);
@@ -566,16 +584,25 @@
          * @description Perform a state changing action on the current active <a href="global.html#interaction">interaction</a> being viewed in Communication Panel.
          * @async
          * @param {'accept'|'reject'|'pick'|'handle'|'hangup'} action Type of action to perform.
-         * @param {string=} interactionId Specify ID of ongoing interaction which should be acted upon.
+         * @param {string=} interactionId Specify ID of ongoing interaction which should be acted upon. Note: For <code>pick</code> this must be the Contact ID of pickable Contact.
          * @returns {Object|false} Changed <a href="global.html#interaction">interaction</a> object, or false if action failed.
          * @memberof CPC
          */
         this.interaction = async (action, interactionId) => {
             const fn = 'interaction';
             const values = ['reject', 'accept', 'hangup', 'handle', 'pick'];
+            const isPick = action === 'pick';
             if (!values.includes(action)) {
                 Log('WRN', fn, `Invalid parameter value. Possible values are: ${values.join('|')}`);
                 return false;
+            }
+            if (isPick && !isUid(interactionId)) {
+                Log('WRN', fn, 'Must provide a valid [interactionId] for action [pick], to identify a currently pickable Contact');
+                return false;
+            }
+            if (isPick) {
+                _sPickingContactId = interactionId
+                _sPickedInteractionId = null;
             }
             if (interactionId && !isUid(interactionId)) {
                 Log('WRN', fn, 'Must provide a valid [interactionId]');
@@ -586,13 +613,29 @@
                 return false;
             }
             const _interactionId = interactionId || this.activeInteractionId;
-            Log('INF', fn, `Requesting state change [${action}] for [${interactionId}]`);
-            return await this.xdmSendAction({
+            Log('INF', fn, `Requesting action [${action}] for [${interactionId}]`);
+            const result = await this.xdmSendAction({
                 cpcFn: fn,
                 command: 'interaction',
                 interactionId: _interactionId,
                 value: action
             });
+            if (!isPick) {
+                // For other than 'pick', we can return here.
+                return result;
+            }
+            // For 'pick' we need some extra handling.
+            const waitForPickedInteraction = () =>
+                new Promise(resolve => {
+                    _pickedResolver = resolve;
+                    setTimeout(() => {
+                    if (_pickedResolver) {
+                        _pickedResolver = null;
+                        resolve(false);
+                    }
+                    }, 5000); // should never take longer than 5 sec to pick a contact
+                });
+            return await waitForPickedInteraction(); // Return picked interaction object, or false.
         };
 
         /**
