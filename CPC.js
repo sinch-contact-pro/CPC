@@ -168,11 +168,8 @@
                             Log('DBG', 'message', 'Interaction [' + interaction.id + '] updated in cache');
                         }
                         Log('DBG', 'message', 'Communication Panel ongoing conversations: [' + _oInteractions.size + ']');
-                        if (message.data.payload.value === 'accepted' && _sPickingContactId !== null && _pickedResolver !== null) {
-                            // The 'pick' command is done using Contact ID. Once picked, backend transforms Contact into Interaction with a new ID.
-                            // Unfortunately, CP doesn't echo back the resulting interaction id.
-                            // We need to assume that the next accepted interaction (after 'pick') is the picked interaction.
-                            Log('DBG', 'message', 'Picked Contact [' + _sPickingContactId + '] should be interaction [' + interaction.id + ']');
+                        if (message.data.payload.value === 'accepted' && _sPickingContactId === interaction.id && _pickedResolver !== null) {
+                            Log('DBG', 'message', 'Picked Contact [' + _sPickingContactId + '] -> active Interaction [' + interaction.id + ']');
                             notifyPicked(interaction);
                         }
                         const interactionEvent = message.data;
@@ -584,7 +581,7 @@
          * @description Perform a state changing action on the current active <a href="global.html#interaction">interaction</a> being viewed in Communication Panel.
          * @async
          * @param {'accept'|'reject'|'pick'|'handle'|'hangup'} action Type of action to perform.
-         * @param {string=} interactionId Specify ID of ongoing interaction which should be acted upon. Note: For <code>pick</code> this must be the Contact ID of pickable Contact.
+         * @param {string=} interactionId Specify ID of ongoing interaction which should be acted upon, or for <code>pick</code> the Contact ID of pickable Contact.
          * @returns {Object|false} Changed <a href="global.html#interaction">interaction</a> object, or false if action failed.
          * @memberof CPC
          */
