@@ -153,12 +153,12 @@
                         }
                         const now = new Date().toISOString();
                         switch (message.data.payload.value) {
-                            case 'incoming': interaction.date_incoming = now; break;
-                            case 'outgoing': interaction.date_outgoing = now; break;
-                            case 'accepted': interaction.date_accepted = now; break;
-                            case 'rejected': interaction.date_rejected = now; break;
-                            case 'ended': interaction.date_ended = now; break;
-                            case 'handled': interaction.date_handled = now; break;
+                        case 'incoming': interaction.date_incoming = now; break;
+                        case 'outgoing': interaction.date_outgoing = now; break;
+                        case 'accepted': interaction.date_accepted = now; break;
+                        case 'rejected': interaction.date_rejected = now; break;
+                        case 'ended': interaction.date_ended = now; break;
+                        case 'handled': interaction.date_handled = now; break;
                         }
                         if (message.data.payload.value === 'handled') {
                             _oInteractions.delete(interaction.id);
@@ -598,8 +598,7 @@
                 return false;
             }
             if (isPick) {
-                _sPickingContactId = interactionId
-                _sPickedInteractionId = null;
+                _sPickingContactId = interactionId;
             }
             if (interactionId && !isUid(interactionId)) {
                 Log('WRN', fn, 'Must provide a valid [interactionId]');
@@ -626,10 +625,10 @@
                 new Promise(resolve => {
                     _pickedResolver = resolve;
                     setTimeout(() => {
-                    if (_pickedResolver) {
-                        _pickedResolver = null;
-                        resolve(false);
-                    }
+                        if (_pickedResolver) {
+                            _pickedResolver = null;
+                            resolve(false);
+                        }
                     }, 5000); // should never take longer than 5 sec to pick a contact
                 });
             return await waitForPickedInteraction(); // Return picked interaction object, or false.
@@ -672,10 +671,11 @@
          * @param {number=} config.minWidth Set width limit (interpreted in pixels) to activate My Conversations view. This overrides User Settings Template -level settings configured in System Configurator.
          * @param {number=} config.minHeight Set height limit (interpreted in pixels) to activate My Conversations view. This overrides User Settings Template -level settings configured in System Configurator.
          * @param {boolean=} config.enableChannelStatusUpdates When enabled, CPC forwards channel_status updates to client event handler.
+         * @param {boolean=} config.useSsoLoginPage Set <code>true</code> to use Communication Panel's SSO login page. This is recommended when using SAML for SSO.
          * @param {Object=} config.authentication Authenticate and log user in automatically.
          * @param {Object=} config.authentication.oAuth OAuth
-         * @param {string} config.authentication.oAuth.token Token
-         * @param {Object=} config.authentication.basic basic authentication
+         * @param {string} config.authentication.oAuth.token OAuth 2.0 Access Token
+         * @param {Object=} config.authentication.basic Basic Authentication
          * @param {string} config.authentication.basic.userName Username
          * @param {string} config.authentication.basic.password Password
          * @async
@@ -707,7 +707,8 @@
             _sTenantBaseUrl = config.tenantBaseUrl; // Store to global private variable
             _sAuthUrl = (_sDevTenant || _sTenantBaseUrl) + 'ecfs/authentication/'; // Note! Remember to include last trailing slash - Otherwise pre-flight OPTIONS is not routed to CorsFilter
             const path = _sDevTenant ? '/' : 'ecf/latest/communicationpanel/';
-            let cpUrl = _sTenantBaseUrl + path + 'embedded.html?salesforce=true'; // Utilize the built-in salesforce integration, as this triggers CP to start notifying parent window
+            const file = config.useSsoLoginPage ? 'embedded_sso.html' : 'embedded.html';
+            let cpUrl = _sTenantBaseUrl + path + file + 'salesforce=true'; // Utilize the built-in salesforce integration, as this triggers CP to start notifying parent window
             if (config.responsive) cpUrl += '&responsive=true'; // Applies only to 22Q3 release
             if (config.denyPopout) cpUrl += '&denyPopout=true';
             if (Number.isInteger(config.minWidth) && config.minWidth > 0) cpUrl += '&minWidth=' + config.minWidth;
@@ -814,7 +815,7 @@
         this.picklist = async () => {
             const fn = 'picklist';
             Log('INF', fn, 'Fetching pickable Contacts');
-            return await this.xdmSendAction({ cpcFn: fn, command: 'picklist'});
+            return await this.xdmSendAction({ cpcFn: fn, command: 'picklist' });
         };
 
         /**
