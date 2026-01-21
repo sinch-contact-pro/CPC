@@ -708,7 +708,7 @@
             _sAuthUrl = (_sDevTenant || _sTenantBaseUrl) + 'ecfs/authentication/'; // Note! Remember to include last trailing slash - Otherwise pre-flight OPTIONS is not routed to CorsFilter
             const path = _sDevTenant ? '/' : 'ecf/latest/communicationpanel/';
             const file = config.useSsoLoginPage ? 'embedded_sso.html' : 'embedded.html';
-            let cpUrl = _sTenantBaseUrl + path + file + 'salesforce=true'; // Utilize the built-in salesforce integration, as this triggers CP to start notifying parent window
+            let cpUrl = _sTenantBaseUrl + path + file + '?salesforce=true'; // Utilize the built-in salesforce integration, as this triggers CP to start notifying parent window
             if (config.responsive) cpUrl += '&responsive=true'; // Applies only to 22Q3 release
             if (config.denyPopout) cpUrl += '&denyPopout=true';
             if (Number.isInteger(config.minWidth) && config.minWidth > 0) cpUrl += '&minWidth=' + config.minWidth;
