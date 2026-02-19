@@ -34,7 +34,7 @@
         const _iActionMaxWaitCount = 100;
         const _iResponseAwaiterInterval = 50; // 100 * 50ms = 5 seconds, to wait for replies from CP.
         const _oPendingActions = {};
-        const _oInteractions = new Map();
+        let _oInteractions = new Map();
         let _sTenantBaseUrl;
         let _oParentElement;
         let _bChannelStatusUpdatesEnabled = false;
@@ -102,9 +102,9 @@
                     // Request user and interactions.
                     const completeInit = async () => {
                         const userDetailsResponse = await this.getDetails('user');
-                        this.currentUser = userDetailsResponse.payload.value;
+                        this.currentUser = userDetailsResponse.payload.value; // Set current user
                         const interactionsDetailsResponse = await this.getDetails('interactions');
-                        _oInteractions = new Map(interactionsDetailsResponse.payload.value.map(oInteraction => [oInteraction.id, oInteraction]));
+                        _oInteractions = new Map(interactionsDetailsResponse.payload.value.map(oInteraction => [oInteraction.id, oInteraction])); // Set current interactions
                         this.hostAppEventHandler({
                             // Fabricate an event to notify customer event handler of when CPC has successfully initialized window messaging with Communication Panel.
                             id: 'cpc-init',
