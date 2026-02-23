@@ -81,6 +81,7 @@
 
         // Input sanitation helpers:
         const isString = val => typeof val === 'string';
+        const isNumber = val => typeof val === 'number';
         const isBoolean = val => typeof val === 'boolean';
         const isArray = val => val instanceof Array;
         const isFunction = val => val && {}.toString.call(val) === '[object Function]';
@@ -811,13 +812,24 @@
         /**
          * @alias picklist
          * @description Returns user's Picklist content.
+         * @async
+         * @param {number=} limit Optionally provide a numeric limit for result count. Default is 100.
+         * @param {string=} queueId Optionally provide a queue ID, or comma-separated list of queue IDs, to narrow search.
          * @returns {Array<object>} Array of pickable <a href="https://docs.cc.sinch.com/cloud/api/RMI.html#contacts_get">contacts</a>
          * @memberof CPC
          */
-        this.picklist = async () => {
+        this.picklist = async (limit, queueId) => {
             const fn = 'picklist';
+            if (limit && !isNumber(limit)) {
+                Log('WRN', fn, 'Must provide a number value for parameter [limit]');
+                return false;
+            }
+            if (queueId && !isString(queueId)) {
+                Log('WRN', fn, 'Must provide a string value for parameter [queueId]');
+                return false;
+            }
             Log('INF', fn, 'Fetching pickable Contacts');
-            return await this.xdmSendAction({ cpcFn: fn, command: 'picklist' });
+            return await this.xdmSendAction({ cpcFn: fn, command: 'picklist', limit: limit, queueId: queueId});
         };
 
         /**
