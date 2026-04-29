@@ -832,6 +832,42 @@
             return await this.xdmSendAction({ cpcFn: fn, command: 'picklist', limit: limit, queueId: queueId});
         };
 
+
+        /**
+         * @alias queueServe
+         * @description Change `serve` state for one or more queues.
+         * @async
+         * @param {boolean} serve Set true|false to start or stop serving in queue(s)
+         * @param {string=} queueId Queue id. Required if `queueIds` is not provided.
+         * @param {string[]=} queueIds List of queue ids. Required if `queueId` is not provided.
+         * @returns {Array<object>=} Array of pickable <a href="https://docs.cc.sinch.com/cloud/api/RMI.html#contacts_get">contacts</a>
+         * @memberof CPC
+         */        
+        this.queueServe = async (serve, queueId, queueIds) => {
+            const fn = 'queueServe';
+            if (!isBoolean(serve)) {
+                Log('WRN', fn, 'Must provide a boolean value for parameter [serve]');
+                return false;
+            }
+            if ((!queueId && !queueIds) || (queueId && queueIds)) {
+                Log('WRN', fn, 'Must provide either [queueId] or [queueIds], but not both');
+                return false;
+            }
+            if (queueId && !isUid(queueId)) {
+                Log('WRN', fn, 'Parameter [queueId] must be an UUID string');
+                return false;                
+            }
+            if (queueIds && (!Array.isArray(queueIds) || !isUid(queueIds[0]))) {
+                Log('WRN', fn, 'Parameter [queueIds] must be an array of UUID strings');
+                return false;                
+            }
+            return await this.xdmSendAction({ cpcFn: fn, command: 'queueServe', value: {
+                serve: serve,
+                queue: queueId,
+                queues: queueIds 
+            }})
+        };
+
         /**
          * @alias sendEmail
          * @description Create a new email.
@@ -955,6 +991,62 @@
                 value: { channel: 'whatsapp', ...chat }
             });
         };
+
+        /**
+         * @alias setPresenceProfile
+         * @description Sets user's presence profile. Also updates `CPC.currentUser.presence`.
+         * @remarks On-premise: Contact Pro Feature Pack 22 (FP22) or later is required.
+         * @async
+         * @param {string} Profile ID
+         * @returns {object|false} Status change event, or false if failed.
+         * @memberof CPC
+         */          
+        this.setPresenceProfile = async(profileId) => {
+            const fn = 'setPresenceProfile';
+            if (!isUid(profileId)) {
+                Log('WRN', fn, `Parameter profileId must be an UUID`);
+                return false;
+            }
+            Log('INF', fn, `Setting profile [${profileId}]`);
+            const result = await this.xdmSendAction({
+                cpcFn: fn,
+                command: 'agentPresence',
+                value: profileId
+            });
+            if (result.payload?.value === 'ok') {
+                CPC.currentUser.presence = profileId;
+            }
+            return result;            
+        }
+
+        /**
+         * @alias setWorkStatus
+         * @description Sets user's work status to Ready or Not Ready. Also updates `CPC.currentUser.work_status`.
+         * @remarks On-premise: Contact Pro Feature Pack 22 (FP22) or later is required.
+         * @async
+         * @param {'ready'|'not_ready'} New status
+         * @returns {object|false} Status change event, or false if failed.
+         * @memberof CPC
+         */        
+        this.setWorkStatus = async(status) => {
+            const fn = 'setWorkStatus';
+            const values = ['ready', 'not_ready'];
+            if (!values.includes(status)) {
+                Log('WRN', fn, `Invalid parameter value. Possible values are: ${values.join('|')}`);
+                return false;
+            }
+            Log('INF', fn, `Setting work status to [${status}]`);
+            const result = await this.xdmSendAction({
+                cpcFn: fn,
+                command: 'agentWorkStatus',
+                value: status
+            });
+            if (result.payload?.value === 'ok') {
+                CPC.currentUser.work_status = status;
+            }
+            return result;
+        };
+
 
         /**
          * @alias transfer
@@ -1176,8 +1268,9 @@
         // https://docs.cc.sinch.com/cloud/api.html
         // Consumer of this library can extend, and add more of these convenience functions into CPC-customer-extension.js.
         /**
+         * @deprecated Use <a href="CPC.html#setPresenceProfile">CPC.setPresenceProfile</a> instead.
          * @alias setPresence
-         * @description Uses <a href="#request">request</a> to call RMI <a href="https://docs.cc.sinch.com/onpremise/fp19/api/RMI.html#agents__agentid__presences__presenceid__put">PUT /agents/{agentId}/presences/{presenceId}</a> to set <a href="global.html#user">user</a>'s presence profile.
+         * @description Uses <a href="#request">request</a> to call RMI <a href="https://docs.cc.sinch.com/onpremise/latest/api/RMI.html#agents__agentid__presences__presenceid__put">PUT /agents/{agentId}/presences/{presenceId}</a> to set <a href="global.html#user">user</a>'s presence profile.
          * @async
          * @param {string} sProfile Profile id or name.<br/><b>Tip:</b> Check current <a href="global.html#user">user</a>'s <code>presence_profiles</code> from <a href="CPC.html#currentUser">CPC.currentUser</a>.
          * @returns {object} Result of profile change. <b>Note:</b> Client code event handler is fired with same value.
@@ -1232,8 +1325,9 @@
         };
 
         /**
+         * @deprecated Use <a href="CPC.html#setWorkStatus">CPC.setWorkStatus</a> instead.
          * @alias setReady
-         * @description Uses <a href="#request">request</a> to call RMI <a href="https://docs.cc.sinch.com/onpremise/fp19/api/RMI.html#agents__agentid__readystate_put">PUT /agents/{agentId}/readyState</a> to set user's Ready-state.
+         * @description Uses <a href="#request">request</a> to call RMI <a href="https://docs.cc.sinch.com/onpremise/latest/api/RMI.html#agents__agentid__readystate_put">PUT /agents/{agentId}/readyState</a> to set user's Ready-state.
          * @async
          * @param {boolean} bReady True=Ready, False=NotReady.
          * @returns {object} Result of ready-state change. Client code event handler is fired with same value.
