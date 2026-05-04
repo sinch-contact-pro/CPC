@@ -448,6 +448,22 @@
         };
 
         /**
+         * @alias downloadLogs
+         * @description Invoke download of Communication Panel logs.
+         * @since Contact Pro cloud: 26Q3 | On-premise: FP22.
+         * @async
+         * @returns {false|Object} Result of action.
+         * @memberof CPC
+         */        
+        this.downloadLogs = async () => {
+            const fn = 'downloadLogs';
+            return await this.xdmSendAction({
+                cpcFn: fn,
+                command: 'downloadLogs'
+            });            
+        };
+
+        /**
          * @alias dtmf
          * @description Send DTMF tone to current active <a href="global.html#interaction">interaction</a> being viewed in Communication Panel. This works only with <code>phone</code> channel.
          * @async
@@ -995,7 +1011,7 @@
         /**
          * @alias setPresenceProfile
          * @description Sets user's presence profile. Also updates `CPC.currentUser.presence`.
-         * @remarks On-premise: Contact Pro Feature Pack 22 (FP22) or later is required.
+         * @since Contact Pro cloud: 26Q3 | On-premise: FP22.
          * @async
          * @param {string} Profile ID
          * @returns {object|false} Status change event, or false if failed.
@@ -1022,7 +1038,7 @@
         /**
          * @alias setWorkStatus
          * @description Sets user's work status to Ready or Not Ready. Also updates `CPC.currentUser.work_status`.
-         * @remarks On-premise: Contact Pro Feature Pack 22 (FP22) or later is required.
+         * @since Contact Pro cloud: 26Q3 | On-premise: FP22.
          * @async
          * @param {'ready'|'not_ready'} New status
          * @returns {object|false} Status change event, or false if failed.
