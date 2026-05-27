@@ -752,7 +752,7 @@
             const i = document.createElement('iframe');
             i.setAttribute('src', cpUrl);
             i.setAttribute('id', iFrameId);
-            i.setAttribute('allow', 'microphone');
+            i.setAttribute('allow', 'camera; microphone; fullscreen; picture-in-picture; autoplay');
             i.style.width = '100%';
             i.style.height = '100%';
             i.style.border = '0';
