@@ -854,8 +854,8 @@
          * @description Change `serve` state for one or more queues.
          * @async
          * @param {boolean} serve Set true|false to start or stop serving in queue(s)
-         * @param {string=} queueId Queue id. Required if `queueIds` is not provided.
-         * @param {string[]=} queueIds List of queue ids. Required if `queueId` is not provided.
+         * @param {string} [queueId] Queue id. Required if `queueIds` is not provided.
+         * @param {string[]} [queueIds] List of queue ids. Required if `queueId` is not provided.
          * @returns {Array<object>=} Array of pickable <a href="https://docs.cc.sinch.com/cloud/api/RMI.html#contacts_get">contacts</a>
          * @memberof CPC
          */        
